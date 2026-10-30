@@ -32,7 +32,7 @@ jobs:
         npx cap add android
         npx cap copy android
 
-    - name: Inject Permissions & Media Config
+    - name: Inject Permissions & Native MediaSession
       run: |
         python3 -c "
         manifest = 'android/app/src/main/AndroidManifest.xml'
@@ -49,6 +49,55 @@ jobs:
             with open(manifest, 'w', encoding='utf-8') as f:
                 f.write(c)
         "
+        python3 -c "
+        java_path = 'android/app/src/main/java/com/akram/musicapp/MainActivity.java'
+        java_code = '''package com.akram.musicapp;
+
+        import android.os.Bundle;
+        import android.webkit.WebView;
+        import android.webkit.WebViewClient;
+        import com.getcapacitor.BridgeActivity;
+
+        public class MainActivity extends BridgeActivity {
+            @Override
+            public void onCreate(Bundle savedInstanceState) {
+                super.onCreate(savedInstanceState);
+                WebView webView = this.bridge.getWebView();
+                webView.setWebViewClient(new WebViewClient() {
+                    @Override
+                    public void onPageFinished(WebView view, String url) {
+                        super.onPageFinished(view, url);
+                        String js = \"setInterval(function() {\" +
+                            \"  var audio = document.querySelector('audio');\" +
+                            \"  if (audio && !audio.dataset.msAttached) {\" +
+                            \"    audio.dataset.msAttached = 'true';\" +
+                            \"    function updateSession() {\" +
+                            \"      if ('mediaSession' in navigator) {\" +
+                            \"        var titleElem = document.querySelector('.current-track-title, h1, h2, h3, .title');\" +
+                            \"        var trackName = titleElem ? titleElem.innerText : 'AKRAM TRACK';\" +
+                            \"        navigator.mediaSession.metadata = new MediaMetadata({\" +
+                            \"          title: trackName,\" +
+                            \"          artist: 'AKRAM APP',\" +
+                            \"          album: 'Music Player'\" +
+                            \"        });\" +
+                            \"        navigator.mediaSession.setActionHandler('play', function() { audio.play(); });\" +
+                            \"        navigator.mediaSession.setActionHandler('pause', function() { audio.pause(); });\" +
+                            \"      }\" +
+                            \"    }\" +
+                            \"    audio.addEventListener('play', updateSession);\" +
+                            \"    audio.addEventListener('playing', updateSession);\" +
+                            \"    audio.addEventListener('pause', updateSession);\" +
+                            \"    updateSession();\" +
+                            \"  }\" +
+                            \"}, 1000);\";
+                        view.evaluateJavascript(js, null);
+                    }
+                });
+            }
+        }'''
+        with open(java_path, 'w', encoding='utf-8') as f:
+            f.write(java_code)
+        "
 
     - name: Grant Execute Permission to Gradle
       run: chmod +x android/gradlew
@@ -61,5 +110,5 @@ jobs:
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: AKRAM-MUSIC-V1.3
+        name: AKRAM-MUSIC-V1.4
         path: android/app/build/outputs/apk/debug/app-debug.apk
