@@ -4,6 +4,35 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AKRAM APP</title>
+  <script>
+    // تفعيل وتحديث MediaSession في شريط الإشعارات تلقائياً
+    window.addEventListener('DOMContentLoaded', () => {
+      const observer = new MutationObserver(() => {
+        const audio = document.querySelector('audio');
+        if (audio && !audio.dataset.sessionAttached) {
+          audio.dataset.sessionAttached = "true";
+
+          const updateSession = () => {
+            if ('mediaSession' in navigator) {
+              navigator.mediaSession.metadata = new MediaMetadata({
+                title: document.querySelector('.current-track-title')?.innerText || 'Akram Track',
+                artist: 'AKRAM APP',
+                album: 'Cloud Stream'
+              });
+
+              navigator.mediaSession.setActionHandler('play', () => audio.play());
+              navigator.mediaSession.setActionHandler('pause', () => audio.pause());
+            }
+          };
+
+          audio.addEventListener('play', updateSession);
+          audio.addEventListener('loadedmetadata', updateSession);
+        }
+      });
+
+      observer.observe(document.body, { childList: true, subtree: true });
+    });
+  </script>
 </head>
 <body style="background:#121212;color:#fff;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;font-family:sans-serif;">
   <h3>جاري فتح AKRAM APP...</h3>
