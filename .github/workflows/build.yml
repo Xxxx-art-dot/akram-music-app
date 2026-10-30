@@ -32,6 +32,25 @@ jobs:
         npx cap add android
         npx cap copy android
 
+    - name: Add Android Permissions
+      run: |
+        python3 -c "
+        manifest_path = 'android/app/src/main/AndroidManifest.xml'
+        with open(manifest_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+
+        permissions = '''
+            <uses-permission android:name=\"android.permission.POST_NOTIFICATIONS\" />
+            <uses-permission android:name=\"android.permission.FOREGROUND_SERVICE\" />
+            <uses-permission android:name=\"android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK\" />
+            <uses-permission android:name=\"android.permission.WAKE_LOCK\" />
+        '''
+        if '<uses-permission' not in content:
+            content = content.replace('<application', permissions + '\n    <application')
+            with open(manifest_path, 'w', encoding='utf-8') as f:
+                f.write(content)
+        "
+
     - name: Grant Execute Permission to Gradle
       run: chmod +x android/gradlew
 
@@ -43,5 +62,5 @@ jobs:
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: AKRAM-MUSIC-V1.1
+        name: AKRAM-MUSIC-V1.2
         path: android/app/build/outputs/apk/debug/app-debug.apk
