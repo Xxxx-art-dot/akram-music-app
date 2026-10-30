@@ -1,0 +1,9 @@
+{
+  "appId": "com.akram.musicapp",
+  "appName": "AKRAM APP",
+  "webDir": "public",
+  "server": {
+    "url": "https://blog-balanced-nationally-edt.trycloudflare.com/",
+    "cleartext": true
+  }
+}
