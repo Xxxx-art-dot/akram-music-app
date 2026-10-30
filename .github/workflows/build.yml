@@ -32,11 +32,6 @@ jobs:
         npx cap add android
         npx cap copy android
 
-    - name: Inject Background Permissions
-      run: |
-        sed -i '/<\/application>/i \    <service android:name="com.getcapacitor.BridgeService" android:foregroundServiceType="mediaPlayback" />' android/app/src/main/AndroidManifest.xml
-        sed -i '/<manifest/a \    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />\n    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />\n    <uses-permission android:name="android.permission.WAKE_LOCK" />' android/app/src/main/AndroidManifest.xml
-
     - name: Grant Execute Permission to Gradle
       run: chmod +x android/gradlew
 
