@@ -32,23 +32,22 @@ jobs:
         npx cap add android
         npx cap copy android
 
-    - name: Add Android Permissions
+    - name: Inject Permissions & Media Config
       run: |
         python3 -c "
-        manifest_path = 'android/app/src/main/AndroidManifest.xml'
-        with open(manifest_path, 'r', encoding='utf-8') as f:
-            content = f.read()
-
-        permissions = '''
+        manifest = 'android/app/src/main/AndroidManifest.xml'
+        with open(manifest, 'r', encoding='utf-8') as f:
+            c = f.read()
+        perms = '''
             <uses-permission android:name=\"android.permission.POST_NOTIFICATIONS\" />
+            <uses-permission android:name=\"android.permission.WAKE_LOCK\" />
             <uses-permission android:name=\"android.permission.FOREGROUND_SERVICE\" />
             <uses-permission android:name=\"android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK\" />
-            <uses-permission android:name=\"android.permission.WAKE_LOCK\" />
         '''
-        if '<uses-permission' not in content:
-            content = content.replace('<application', permissions + '\n    <application')
-            with open(manifest_path, 'w', encoding='utf-8') as f:
-                f.write(content)
+        if 'POST_NOTIFICATIONS' not in c:
+            c = c.replace('<application', perms + '\n    <application')
+            with open(manifest, 'w', encoding='utf-8') as f:
+                f.write(c)
         "
 
     - name: Grant Execute Permission to Gradle
@@ -62,5 +61,5 @@ jobs:
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: AKRAM-MUSIC-V1.2
+        name: AKRAM-MUSIC-V1.3
         path: android/app/build/outputs/apk/debug/app-debug.apk
