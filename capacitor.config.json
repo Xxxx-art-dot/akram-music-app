@@ -5,5 +5,9 @@
   "server": {
     "url": "https://blog-balanced-nationally-edt.trycloudflare.com/",
     "cleartext": true
+  },
+  "android": {
+    "allowMixedContent": true,
+    "webContentsDebuggingEnabled": true
   }
 }
