@@ -5,32 +5,49 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AKRAM APP</title>
   <script>
-    // تفعيل وتحديث MediaSession في شريط الإشعارات تلقائياً
+    // طلب إذن الإشعارات تلقائياً فور فتح التطبيق لأندرويد 13+
+    if ("Notification" in window && Notification.permission !== "granted") {
+      Notification.requestPermission();
+    }
+
+    // تفعيل بطاقة وسائط النظام الرسمية
+    function setupSystemMedia() {
+      const audio = document.querySelector('audio');
+      if (!audio) return;
+
+      if ('mediaSession' in navigator) {
+        const syncSession = () => {
+          navigator.mediaSession.metadata = new MediaMetadata({
+            title: document.querySelector('.current-track-title')?.innerText || 'Akram Audio',
+            artist: 'AKRAM APP',
+            album: 'Cloud Library',
+            artwork: [
+              { src: 'https://via.placeholder.com/512.png?text=AKRAM', sizes: '512x512', type: 'image/png' }
+            ]
+          });
+
+          navigator.mediaSession.playbackState = audio.paused ? "paused" : "playing";
+        };
+
+        navigator.mediaSession.setActionHandler('play', () => audio.play());
+        navigator.mediaSession.setActionHandler('pause', () => audio.pause());
+        navigator.mediaSession.setActionHandler('previoustrack', () => {
+          const prevBtn = document.querySelector('[data-action="prev"], .prev-button');
+          if (prevBtn) prevBtn.click();
+        });
+        navigator.mediaSession.setActionHandler('nexttrack', () => {
+          const nextBtn = document.querySelector('[data-action="next"], .next-button');
+          if (nextBtn) nextBtn.click();
+        });
+
+        audio.addEventListener('play', syncSession);
+        audio.addEventListener('pause', syncSession);
+        audio.addEventListener('loadedmetadata', syncSession);
+      }
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
-      const observer = new MutationObserver(() => {
-        const audio = document.querySelector('audio');
-        if (audio && !audio.dataset.sessionAttached) {
-          audio.dataset.sessionAttached = "true";
-
-          const updateSession = () => {
-            if ('mediaSession' in navigator) {
-              navigator.mediaSession.metadata = new MediaMetadata({
-                title: document.querySelector('.current-track-title')?.innerText || 'Akram Track',
-                artist: 'AKRAM APP',
-                album: 'Cloud Stream'
-              });
-
-              navigator.mediaSession.setActionHandler('play', () => audio.play());
-              navigator.mediaSession.setActionHandler('pause', () => audio.pause());
-            }
-          };
-
-          audio.addEventListener('play', updateSession);
-          audio.addEventListener('loadedmetadata', updateSession);
-        }
-      });
-
-      observer.observe(document.body, { childList: true, subtree: true });
+      setInterval(setupSystemMedia, 1500);
     });
   </script>
 </head>
